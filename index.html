@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Time App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #h6j8l9;
+    }
+
+    .container {
+      text-align: center;
+      background-color: #aft;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    form {
+      margin-bottom: 20px;
+    }
+
+    input[type="text"] {
+      padding: 8px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      padding: 8px 16px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .time-container {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background-color: #f9f9f9;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/babel-standalone@6.26.0/babel.min.js"></script>
+  <script>
+  class App extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          cityInput: '',
+          currentTime: ''
+        };
+      }
+
+      handleFormSubmit = async (event) => {
+        event.preventDefault();
+
+        const { cityInput } = this.state;
+
+        if (cityInput.trim() === '') {
+          alert('Enter a city name.');
+          return;
+        }
+
+        try {
+          const response = await fetch(`http://worldtimeapi.org/api/timezone/${cityInput}`);
+
+          if (!response.ok) {
+            throw new Error('City not found.');
+          }
+          const data = await response.json();
+          const { timezone, datetime } = data;
+          const formattedTime = new Date(datetime).toLocaleTimeString('en-US', {
+            timeZone: timezone,
+            hour12: true,
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric'
+          });
+          this.setState({
+            currentTime: `Current time in ${cityInput}: ${formattedTime}`
+          });
+        } catch (error) {
+          console.error('Error fetching data:', error);
+          alert('City not found or error fe Please try again.');
+        }
+      };
+      handleInputChange = (event) => {
+        this.setState({
+          cityInput: event.target.value
+        });
+      };
+
+      render() {
+        const { cityInput, currentTime } = this.state;
+        return (
+          <div className="container">
+            <h1>City Time Checker</h1>
+            <form onSubmit={this.handleFormSubmit}>
+              <label htmlFor="cityInput">Enter a city:</label>
+              <input
+                type="text"
+                id="cityInput"
+                name="cityInput"
+                value={cityInput}
+                onChange={this.handleInputChange}
+                required
+              />
+              <button type="submit">Get Time</button>
+            </form>
+            <div className="time-container">
+              {currentTime && <p>{currentTime}</p>}
+            </div>
+          </div>
+        );
+      }
+      }
+      ReactDOM.render(<App />, document.getElementById('app'));
+
+  </script>
+</body>
+</html>
